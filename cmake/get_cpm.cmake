@@ -15,7 +15,17 @@ if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
   file(DOWNLOAD
        https://github.com/cpm-cmake/CPM.cmake/releases/download/v${CPM_DOWNLOAD_VERSION}/CPM.cmake
        ${CPM_DOWNLOAD_LOCATION}
+       STATUS status_error
   )
+  # Check if download was successful
+  list(GET status_error 0 status)
+  if (NOT status EQUAL 0)
+    # file(DOWNLOAD) creates an empty file upon error, remove it so it is not
+    # mistaken for a proper CPM.cmake script by future runs of get_cpm.cmake
+    file (REMOVE ${CPM_DOWNLOAD_LOCATION})
+    list(GET status_error 1 error_message)
+    message(FATAL_ERROR "Downloading CPM.cmake failed: ${error_message}")
+  endif()
 endif()
 
 include(${CPM_DOWNLOAD_LOCATION})
